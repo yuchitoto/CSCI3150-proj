@@ -17,7 +17,7 @@ int main(int argc, char ** args){
 		return -1;
 	}
 	int fd = open (args[1], O_RDWR);
-	if(fd<0){       
+	if(fd<0){
 		printf("Error: open()\n");
 		return -1;
 	}
