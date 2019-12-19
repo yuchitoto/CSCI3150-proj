@@ -25,6 +25,10 @@ int open_t(char *pathname)
 }
 ```
 
+### read_t()
+
+Simple arithmetic on file_size(inode->i_size)
+
 Or you can simply use strtok() and update inode repeatedly
 
 Declaration: I did not use recursive algorithm to handle it

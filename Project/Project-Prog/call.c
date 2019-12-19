@@ -35,12 +35,12 @@ inode* read_inode(int fd, int inode_num)
 	if(cursor_pos < 0)
 	{
 		dprintf(2,"lseek err\n");
-		exit(-1);
+		return NULL;
 	}
 	if(read(fd,i,sizeof(inode)) != sizeof(inode))
 	{
 		dprintf(2,"read err\n");
-		exit(-2);
+		return NULL;
 	}
 	return i;
 }
@@ -68,10 +68,12 @@ int next_dir(int fd, int i_number, char *dir_name)
 	int next_inode = -1;
 	inode *ip;
 	ip = read_inode(fd,i_number);
+	if(ip==NULL)
+		return -1;
 	if(ip->i_type != DIR)
 	{
 		dprintf(2,"not a file\n");
-		exit(-2);
+		return -1;
 	}
 
 	DIR_NODE *data_blk = (DIR_NODE*)malloc(BLOCK_SIZE);
@@ -106,7 +108,7 @@ int open_t(char *pathname)
 		if(inode_number<0)
 		{
 			dprintf(2,"wrong path\n");
-			exit(0);
+			return -1;
 		}
 	}
 	return inode_number;
@@ -115,7 +117,14 @@ int open_t(char *pathname)
 int read_t(int inode_number, int offest, void *buf, int count)
 {
 	int read_bytes;
-	// write your code here.
+	int fd = open("./HD",O_RDONLY);
+	inode *some_inode = read_inode(fd, inode_number);
+	if(some_inode == NULL)
+		return -1;
+
+	int end = count + offest;
+	read_bytes = (end <= some_inode->i_size)?count:some_inode->i_size-offest;
+	read_bytes = (read_bytes<0)?0:read_bytes;
 	return read_bytes;
 }
 
