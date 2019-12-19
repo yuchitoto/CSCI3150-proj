@@ -5,9 +5,9 @@ If this piece of ____ really does not allow using functions in functions other t
 ### open_t()
 You have pathname of /XXX/XXX this kind of things,
 
-what you should do is handle each part between / one by one.
+what you should do is handle each part between "/" one by one.
 
-You can cut the first / out and use strcspn() to locate the remaining substring and use open_t recursively
+You can cut the first "/" out and use strcspn() to locate the remaining substring and use open_t recursively, in the way demonstrated below
 
 ```c
 int func(int fd, int inode, char *pathname)
