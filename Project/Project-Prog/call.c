@@ -98,10 +98,10 @@ int open_t(char *pathname)
 	inode *rt = read_inode(file,0); //root
 	inode_number = 0;
 
-	char *dir_name = strtok(pathname,"/")
+	char *dir_name = strtok(pathname,"/");
 	while(dir_name!=NULL)
 	{
-		inode_number = next_dir(fd,inode_number,dir_name);
+		inode_number = next_dir(file,inode_number,dir_name);
 		dir_name = strtok(NULL,"/");
 		if(inode_number<0)
 		{
