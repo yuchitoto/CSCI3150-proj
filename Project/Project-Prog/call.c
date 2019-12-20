@@ -28,10 +28,10 @@
 
 const char *HD = "HD";
 
-inode* read_inode(int fd, int inode_num)
+inode* read_inode(int fd, int inode_num, superblock *sb)
 {
 	inode *i = malloc(sizeof(inode));
-	int cursor_pos = lseek(fd, INODE_OFFSET+inode_num*sizeof(inode),SEEK_SET);
+	int cursor_pos = lseek(fd, sb->inode_offset+inode_num*sizeof(inode),SEEK_SET);
 	if(cursor_pos < 0)
 	{
 		dprintf(2,"lseek err\n");
@@ -63,11 +63,11 @@ superblock* read_sb(int fd)//copied from Tutorial 1 superblock.c
 	return sb;
 }
 
-int next_dir(int fd, int i_number, char *dir_name)
+int next_dir(int fd, int i_number, char *dir_name, superblock *sb)
 {
 	int next_inode = -1;
 	inode *ip;
-	ip = read_inode(fd,i_number);
+	ip = read_inode(fd,i_number, sb);
 	if(ip==NULL)
 		return -1;
 	if(ip->i_type != DIR)
@@ -76,11 +76,11 @@ int next_dir(int fd, int i_number, char *dir_name)
 		return -1;
 	}
 
-	DIR_NODE *data_blk = (DIR_NODE*)malloc(BLOCK_SIZE);
+	DIR_NODE *data_blk = (DIR_NODE*)malloc(sb->blk_size);
 
 	int block_number = ip->direct_blk[0];
-	int currpos = lseek(fd,DATA_OFFSET+block_number*BLOCK_SIZE,SEEK_SET);
-	read(fd,data_blk,BLOCK_SIZE);
+	int currpos = lseek(fd,sb->data_offset+block_number*sb->blk_size,SEEK_SET);
+	read(fd,data_blk,sb->blk_size);
 	for(int i=0;i<ip->file_num;i++)
 	{
 		if(strcmp(data_blk[i].dir,dir_name)==0)
@@ -89,7 +89,8 @@ int next_dir(int fd, int i_number, char *dir_name)
 			break;
 		}
 	}
-
+	free(data_blk);
+	free(ip);
 	return next_inode;
 }
 
@@ -97,13 +98,16 @@ int open_t(char *pathname)
 {
 	int inode_number;
 	int file = open("./HD",O_RDONLY);
-	inode *rt = read_inode(file,0); //root
+	superblock *sb = read_sb(file);
+	inode *rt = read_inode(file,0,sb); //root
+	if(rt==NULL)
+		return -1;
 	inode_number = 0;
 
 	char *dir_name = strtok(pathname,"/");
 	while(dir_name!=NULL)
 	{
-		inode_number = next_dir(file,inode_number,dir_name);
+		inode_number = next_dir(file,inode_number,dir_name,sb);
 		dir_name = strtok(NULL,"/");
 		if(inode_number<0)
 		{
@@ -111,6 +115,7 @@ int open_t(char *pathname)
 			return -1;
 		}
 	}
+	close(file);
 	return inode_number;
 }
 
@@ -118,13 +123,15 @@ int read_t(int inode_number, int offest, void *buf, int count)
 {
 	int read_bytes;
 	int fd = open("./HD",O_RDONLY);
-	inode *some_inode = read_inode(fd, inode_number);
+	superblock *sb = read_sb(fd);
+	inode *some_inode = read_inode(fd, inode_number,sb);
 	if(some_inode == NULL)
 		return -1;
 
 	int end = count + offest;
 	read_bytes = (end <= some_inode->i_size)?count:some_inode->i_size-offest;
 	read_bytes = (read_bytes<0)?0:read_bytes;
+	close(fd);
 	return read_bytes;
 }
 
