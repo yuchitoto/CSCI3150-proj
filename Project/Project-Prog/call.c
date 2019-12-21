@@ -151,7 +151,7 @@ int read_t(int inode_number, int offest, void *buf, int count)
 			int sz = sb->blk_size-offest;
 			sz = (sz<read_bytes)?sz:read_bytes;
 			lseek(fd, sb->data_offset+some_inode->direct_blk[0]*sb->blk_size,SEEK_SET);
-			read(fd,&buf[pt],sz);
+			read(fd,(char*)buf+pt,sz);
 			pt+=sz;
 			offest = 0;
 			//printf("read dir blk 0 cur pt: %d\n \n",pt);
@@ -163,7 +163,7 @@ int read_t(int inode_number, int offest, void *buf, int count)
 			int sz = sb->blk_size-offest;
 			sz = (sz<t)?sz:t;
 			lseek(fd, sb->data_offset+some_inode->direct_blk[1]*sb->blk_size,SEEK_SET);
-			read(fd,&buf[pt],sz);
+			read(fd,(char*)buf+pt,sz);
 			pt+=sz;
 			offest=0;
 			//printf("read dir blk 1 cur pt: %d\n \n",pt);
@@ -174,13 +174,13 @@ int read_t(int inode_number, int offest, void *buf, int count)
 			indr_ind = rdblk-2;
 			//printf("going to read indir blk %d pt %d\n",indr_ind,pt);
 			lseek(fd, sb->data_offset+some_inode->indirect_blk*sb->blk_size+indr_ind*sizeof(int), SEEK_SET);
-			read(fd,indr_ind,sizeof(int));
+			read(fd,&indr_ind,sizeof(int));
 			//printf("indir blk at %d\n",indr_ind);
 			int t = read_bytes-pt;
 			int sz = sb->blk_size-offest;
 			sz = (sz<t)?sz:t;
 			lseek(fd, sb->data_offset+indr_ind*sb->blk_size,SEEK_SET);
-			read(fd,&buf[pt],sz);
+			read(fd,(char*)buf+pt,sz);
 			pt+=sz;
 			offest=0;
 			//printf("read indir blk %d cur pt %d\n \n", rdblk-2, pt);
