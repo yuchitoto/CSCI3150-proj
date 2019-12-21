@@ -30,7 +30,7 @@ const char *HD = "HD";
 
 inode* read_inode(int fd, int inode_num, superblock *sb)
 {
-	inode *i = malloc(sizeof(inode));
+	inode *i = (inode*)malloc(sizeof(inode));
 	int cursor_pos = lseek(fd, sb->inode_offset+inode_num*sizeof(inode),SEEK_SET);
 	if(cursor_pos < 0)
 	{
@@ -47,7 +47,7 @@ inode* read_inode(int fd, int inode_num, superblock *sb)
 
 superblock* read_sb(int fd)//copied from Tutorial 1 superblock.c
 {
-	superblock* sb = malloc(sizeof(superblock));
+	superblock* sb = (superblock*)malloc(sizeof(superblock));
 	int currpos=lseek(fd, SB_OFFSET, SEEK_SET);
 	if(currpos<0){
 		printf("Error: lseek()\n");
@@ -127,10 +127,55 @@ int read_t(int inode_number, int offest, void *buf, int count)
 	inode *some_inode = read_inode(fd, inode_number,sb);
 	if(some_inode == NULL)
 		return -1;
+	if(some_inode->i_type!=SUBFILE)
+	{
+		dprintf(2,"not a file\n");
+		return -1;
+	}
 
 	int end = count + offest;
 	read_bytes = (end <= some_inode->i_size)?count:some_inode->i_size-offest;
 	read_bytes = (read_bytes<0)?0:read_bytes;
+	if(read_bytes>0)
+	{
+		int pt=0;
+		int ed, st;
+		st = offest/sb->blk_size;
+		ed = (offest+read_bytes)/sb->blk_size;
+		if(st==0 && ed>=0)
+		{
+			int sz = sb->blk_size-offest;
+			sz = (sz<read_bytes)?sz:read_bytes;
+			lseek(fd, sb->data_offset+some_inode->direct_blk[0]*sb->blk_size,SEEK_SET);
+			read(fd,&buf[pt],sz);
+			pt+=sz;
+			offest = 0;
+		}
+		if(st<=1 && ed >=1)
+		{
+			int t = read_bytes-pt;
+			int sz = sb->blk_size-offest;
+			sz = (sz<t)?sz:t;
+			lseek(fd, sb->data_offset+some_inode->direct_blk[1]*sb->blk_size,SEEK_SET);
+			read(fd,&buf[pt],sz);
+			pt+=sz;
+			offest=0;
+		}
+		int indr_ind;
+		for(int rdblk=(st<2)?2:st;rdblk<=ed;rdblk++)
+		{
+			indr_ind = rdblk-2;
+			lseek(fd, sb->data_offset+some_inode->indirect_blk*sb->blk_size+indr_ind*sizeof(int), SEEK_SET);
+			read(fd,indr_ind,sizeof(int));
+			int t = read_bytes-pt;
+			int sz = sb->blk_size-offest;
+			sz = (sz<t)?sz:t;
+			lseek(fd, sb->data_offset+indr_ind*sb->blk_size,SEEK_SET);
+			read(fd,&buf[pt],sz);
+			pt+=sz;
+			offest=0;
+		}
+	}
 	close(fd);
 	return read_bytes;
 }

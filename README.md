@@ -1,5 +1,5 @@
 # CSCI3150 2019 Final Project
-If this piece of ____ really does not allow using functions in functions other than read_t and open_t, you can still implement functions using preprocessors.
+You are not allowed to use auxillary functions in the macro, though you can still implement functions using preprocessors as wrappers.
 
 ## Implementation Concepts
 ### open_t()
