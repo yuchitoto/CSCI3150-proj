@@ -142,17 +142,23 @@ int read_t(int inode_number, int offest, void *buf, int count)
 		int ed, st;
 		st = offest/sb->blk_size;
 		ed = (offest+read_bytes)/sb->blk_size;
+		//printf("st: %d ed: %d\n\n",st,ed);
+
+		offest -= st*sb->blk_size;
 		if(st==0 && ed>=0)
 		{
+			//printf("going to read dir blk 0 pt: %d\n",pt);
 			int sz = sb->blk_size-offest;
 			sz = (sz<read_bytes)?sz:read_bytes;
 			lseek(fd, sb->data_offset+some_inode->direct_blk[0]*sb->blk_size,SEEK_SET);
 			read(fd,&buf[pt],sz);
 			pt+=sz;
 			offest = 0;
+			//printf("read dir blk 0 cur pt: %d\n \n",pt);
 		}
 		if(st<=1 && ed >=1)
 		{
+			//printf("going to read dir blk 1 pt: %d\n",pt);
 			int t = read_bytes-pt;
 			int sz = sb->blk_size-offest;
 			sz = (sz<t)?sz:t;
@@ -160,13 +166,16 @@ int read_t(int inode_number, int offest, void *buf, int count)
 			read(fd,&buf[pt],sz);
 			pt+=sz;
 			offest=0;
+			//printf("read dir blk 1 cur pt: %d\n \n",pt);
 		}
 		int indr_ind;
 		for(int rdblk=(st<2)?2:st;rdblk<=ed;rdblk++)
 		{
 			indr_ind = rdblk-2;
+			//printf("going to read indir blk %d pt %d\n",indr_ind,pt);
 			lseek(fd, sb->data_offset+some_inode->indirect_blk*sb->blk_size+indr_ind*sizeof(int), SEEK_SET);
 			read(fd,indr_ind,sizeof(int));
+			//printf("indir blk at %d\n",indr_ind);
 			int t = read_bytes-pt;
 			int sz = sb->blk_size-offest;
 			sz = (sz<t)?sz:t;
@@ -174,6 +183,7 @@ int read_t(int inode_number, int offest, void *buf, int count)
 			read(fd,&buf[pt],sz);
 			pt+=sz;
 			offest=0;
+			//printf("read indir blk %d cur pt %d\n \n", rdblk-2, pt);
 		}
 	}
 	close(fd);
