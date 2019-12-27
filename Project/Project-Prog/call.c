@@ -121,6 +121,8 @@ int open_t(char *pathname)
 
 int read_t(int inode_number, int offest, void *buf, int count)
 {
+	if(inode_number<0)
+		return -1;
 	int read_bytes;
 	int fd = open("./HD",O_RDONLY);
 	superblock *sb = read_sb(fd);
@@ -150,7 +152,7 @@ int read_t(int inode_number, int offest, void *buf, int count)
 			//printf("going to read dir blk 0 pt: %d\n",pt);
 			int sz = sb->blk_size-offest;
 			sz = (sz<read_bytes)?sz:read_bytes;
-			lseek(fd, sb->data_offset+some_inode->direct_blk[0]*sb->blk_size,SEEK_SET);
+			lseek(fd, sb->data_offset+some_inode->direct_blk[0]*sb->blk_size+offest,SEEK_SET);
 			read(fd,(char*)buf+pt,sz);
 			pt+=sz;
 			offest = 0;
@@ -162,7 +164,7 @@ int read_t(int inode_number, int offest, void *buf, int count)
 			int t = read_bytes-pt;
 			int sz = sb->blk_size-offest;
 			sz = (sz<t)?sz:t;
-			lseek(fd, sb->data_offset+some_inode->direct_blk[1]*sb->blk_size,SEEK_SET);
+			lseek(fd, sb->data_offset+some_inode->direct_blk[1]*sb->blk_size+offest,SEEK_SET);
 			read(fd,(char*)buf+pt,sz);
 			pt+=sz;
 			offest=0;
@@ -179,7 +181,7 @@ int read_t(int inode_number, int offest, void *buf, int count)
 			int t = read_bytes-pt;
 			int sz = sb->blk_size-offest;
 			sz = (sz<t)?sz:t;
-			lseek(fd, sb->data_offset+indr_ind*sb->blk_size,SEEK_SET);
+			lseek(fd, sb->data_offset+indr_ind*sb->blk_size+offest,SEEK_SET);
 			read(fd,(char*)buf+pt,sz);
 			pt+=sz;
 			offest=0;
