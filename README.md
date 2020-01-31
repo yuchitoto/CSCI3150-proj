@@ -31,25 +31,3 @@ Declaration: I did not use recursive algorithm to handle it
 
 ### read_t()
 Simple arithmetic on file_size(inode->i_size)
-
-## Preprocessor Using Examples
-
-[Best Abuse of the C Preprocessor 1993](http://www.de.ioccc.org/years.html#1993_dgibson)
-
-[Best Abuse of the C Preprocessor 1990](http://www.de.ioccc.org/years.html#1990_dg)
-
-[Best Abuse of the C Preprocessor 2001](http://www.de.ioccc.org/years.html#2001_herrmann1)
-
-[Worst abuse of the C preprocessor 1986](http://www.de.ioccc.org/years.html#1986_hague)
-
-[Worst abuse of the C preprocessor 1992](http://www.de.ioccc.org/years.html#1992_lush)
-
-[Worst abuse of the C preprocessor 1995](http://www.de.ioccc.org/years.html#1995_vanschnitz)
-
-[Worst abuse of the C preprocessor 1996](http://www.de.ioccc.org/years.html#1996_schweikh1)
-
-[Worst abuse of the C preprocessor 1985](http://www.de.ioccc.org/years.html#1985_sicherman)
-
-[Worst abuse of the C preprocessor 1995](http://www.de.ioccc.org/years.html#1995_vanschnitz)
-
-[Worst abuse of the C preprocessor 1994](http://www.de.ioccc.org/years.html#1994_westley)
